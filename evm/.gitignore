@@ -32,3 +32,6 @@ msbuild.wrn
 .vs/
 
 packages/
+paket.lock
+paket-files/
+Paket.Restore.targets
