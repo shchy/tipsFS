@@ -1,72 +1,7 @@
-﻿open System
+﻿module Program
 
-
-type User =
-    {
-        ID : int
-        Name : string
-    }
-
-type TaskItem =
-    {
-        ID : int
-        Name : string
-        Value : double
-    }
-
-type Range<'T> = 
-    {
-        Start : 'T
-        End : 'T
-    }
-
-type Sprint =
-    {
-        ID : int
-        Name : string
-        Tasks : TaskItem list
-        Range : Range<DateTime> /// todo 逆にスプリント内の営業日が変化するのを受け入れるほうがわかりやすい？
-    }
-
-type Project =
-    {
-        ID : int
-        Name : string
-        Sprints : Sprint list
-        Tasks : TaskItem list   /// todo 優先度の概念がある
-        Users : User list
-    }
-
-
-/// ---------こっからEVM色が強いよ
-
-
-
-/// TaskItemの進捗履歴
-type TaskRecord =
-    {
-        TaskID : int
-        Value : double
-        Timestamp : DateTime
-        User : User
-    }
-
-
-
-/// タスクの割当
-type TaskAssign =
-    {
-        TaskID : int
-        UserID : int
-    }
-
-type WorkRecord =
-    {
-        TimeStamp : DateTime
-        User : User
-        Value : double
-    }
-
+open EVM
+open System
 
 [<EntryPoint>]
 let main _ =
@@ -136,6 +71,7 @@ let main _ =
                 Value = (List.find (fun (t:TaskItem) -> t.ID = a.TaskID) project02.Tasks).Value / 2.0
             })
         List.map f assigns
+    0    
 
     // EVMのレポート
     // 見積もり量 と 終わった量 と 使った量 が必要
@@ -145,10 +81,10 @@ let main _ =
     // todo     全員に運用させるのは無理。管理者もチェックに追われるしチェックは機械的には出来ない
     // todo なのでEVMレポートはあくまでスプリント単位とし、使った量はその日の働いた時間だけ入力すれば良いこととする
     // todo トータルの工数管理はするしね
-    // // スプリント毎にEVMのレポートを生成
+    // スプリント毎にEVMのレポートを生成
     // let makeEVM (sprints:Sprint list) (records:TaskRecord list) =
 
-        // let isInSprintTask (s:Sprint) (r:TaskRecord) = List.exists (fun (t:TaskItem) -> t.ID = r.TaskID ) s.Tasks
+    //     let isInSprintTask (s:Sprint) (r:TaskRecord) = List.exists (fun (t:TaskItem) -> t.ID = r.TaskID ) s.Tasks
 
     //     let makeEVM (s:Sprint) = 
     //         list 
