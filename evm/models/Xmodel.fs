@@ -1,6 +1,7 @@
 namespace EVM
 
 open System
+open Giraffe
 
 type User =
     {
@@ -76,3 +77,23 @@ type WorkRecord =
         User : User
         Value : double
     }
+
+
+[<CLIMutable>]
+type Person =
+    {
+        Name : string
+    }
+
+ [<CLIMutable>]
+    type Car =
+        {
+            Name   : string
+            Make   : string
+            Wheels : int
+            Built  : DateTime
+        }
+        interface IModelValidation<Car> with
+            member this.Validate() =
+                if this.Wheels > 1 && this.Wheels <= 6 then Ok this
+                else Error (RequestErrors.BAD_REQUEST "Wheels must be a value between 2 and 6.")

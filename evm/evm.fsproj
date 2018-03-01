@@ -8,6 +8,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="models/*.fs" />
+    <Compile Include="views/*.fs" />
+    <Compile Include="web/*.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
