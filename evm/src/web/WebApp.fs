@@ -12,8 +12,6 @@ open FSharp.Control.Tasks.ContextInsensitive
 open Giraffe
 open EVM
 
-
-
 module WebApp =    
     // ---------------------------------
     // Auth

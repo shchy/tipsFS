@@ -8,14 +8,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src/models/*.fs" />
+    <Compile Include="src/services/dataStore/IDataStore.fs" />
+    <Compile Include="src/services/dataStore/DebugDataStore.fs" />
     <Compile Include="src/views/*.fs" />
+    <Compile Include="src/web/*/*.fs" />
     <Compile Include="src/web/*.fs" />
     <Compile Include="src/Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="WebRoot\**\*">
+    <Content Include="wwwroot\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

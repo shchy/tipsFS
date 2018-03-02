@@ -60,7 +60,6 @@ type WorkUnit =
         Range : Range<DateTime>
     }
 
-
 /// TaskItemの進捗履歴
 type TaskRecord =
     {
@@ -70,14 +69,12 @@ type TaskRecord =
         User : User
     }
 
-
 type WorkRecord =
     {
         TimeStamp : DateTime
         User : User
         Value : double
     }
-
 
 [<CLIMutable>]
 type Person =
@@ -86,14 +83,16 @@ type Person =
     }
 
  [<CLIMutable>]
-    type Car =
-        {
-            Name   : string
-            Make   : string
-            Wheels : int
-            Built  : DateTime
-        }
-        interface IModelValidation<Car> with
-            member this.Validate() =
-                if this.Wheels > 1 && this.Wheels <= 6 then Ok this
-                else Error (RequestErrors.BAD_REQUEST "Wheels must be a value between 2 and 6.")
+type Car =
+    {
+        Name   : string
+        Make   : string
+        Wheels : int
+        Built  : DateTime
+    }
+    interface IModelValidation<Car> with
+        member this.Validate() =
+            if this.Wheels > 1 && this.Wheels <= 6 then Ok this
+            else Error (RequestErrors.BAD_REQUEST "Wheels must be a value between 2 and 6.")
+
+
