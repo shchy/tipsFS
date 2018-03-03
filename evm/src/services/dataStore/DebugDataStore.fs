@@ -1,31 +1,48 @@
 namespace EVM
 
+type Crud<'M> 
+    ( getID : 'M -> int
+    , createFrom : int -> 'M -> 'M) =
+    
+    let mutable models : 'M list = List.Empty
 
-type DebugDataStore ()=
-    let mutable users : User list = List.Empty
+    member this.Create (model:'M) = 
+        let newID = 
+            models 
+            |> List.fold (fun (max:int) (x:'M) -> if max < getID x then getID x else max ) -1
+            |> (+) 1
+            
+        let newOne = createFrom newID model
+        models <- models @ [newOne]
+        newOne
+    member this.Get () = models
+    member this.Update model =
+        let xs = 
+            models
+            |> List.where (fun (x:'M) -> getID x = getID model)
+        models <- xs @ [model]
+        true            
+         
+    member this.Delete model =
+        let xs = 
+            models
+            |> List.where (fun (x:'M) -> getID x = getID model)
+        models <- xs
+        true
+
+    
+    
+
+
+
+type DebugDataStore () =
+    let userCRUD = Crud<User>((fun x -> x.ID), (fun id x -> { ID = id; Name = x.Name }) ) 
+    
     interface IDataStore with
-        member this.CreateUser u = 
-            let newUser = 
-                {
-                    ID = (List.fold (fun (max:int) (x:User) -> if max < x.ID then x.ID else max ) -1 users) + 1
-                    Name = u.Name
-                }
-            users <- users @ [newUser]
-            newUser
-        member this.GetUsers () = users
-        member this.UpdateUser u =
-            let xs = 
-                users
-                |> List.where (fun (x:User) -> x.ID = u.ID)
-            users <- xs @ [u]
-            true            
-             
-        member this.DeleteUser u =
-            let xs = 
-                users
-                |> List.where (fun (x:User) -> x.ID = u.ID)
-            users <- xs
-            true
+        member this.CreateUser u = userCRUD.Create u 
+        member this.GetUsers () = userCRUD.Get ()
+        member this.UpdateUser u = userCRUD.Update u
+        member this.DeleteUser u = userCRUD.Delete u
 
         // member this.CreateProject : Project -> Project
         // member this.GetProjects : unit -> Project list
