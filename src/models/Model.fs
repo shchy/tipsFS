@@ -3,15 +3,19 @@ namespace EVM
 open System
 open Giraffe
 
+[<CLIMutable>]
 type User =
     {
         ID : int
         Name : string
+        AuthID : string
+        Password : string
     }
 
+[<CLIMutable>]
 type Tag = string
 
-
+[<CLIMutable>]
 type TaskItem =
     {
         ID : int
@@ -19,12 +23,14 @@ type TaskItem =
         Value : double
     }
 
+[<CLIMutable>]
 type Range<'T> = 
     {
         Start : 'T
         End : 'T
     }
 
+[<CLIMutable>]
 type Sprint =
     {
         ID : int
@@ -33,6 +39,7 @@ type Sprint =
         Range : Range<DateTime> /// todo 逆にスプリント内の営業日が変化するのを受け入れるほうがわかりやすい？
     }
 
+[<CLIMutable>]
 type Project =
     {
         ID : int
@@ -43,6 +50,7 @@ type Project =
     }
 
 /// タスクの割当
+[<CLIMutable>]
 type TaskAssign =
     {
         TaskID : int
@@ -52,6 +60,7 @@ type TaskAssign =
 /// ---------こっからEVM色が強いよ
 
 /// 勤怠入力のための登録番号的な位置づけ
+[<CLIMutable>]
 type WorkUnit =
     {
         ID : int
@@ -61,6 +70,7 @@ type WorkUnit =
     }
 
 /// TaskItemの進捗履歴
+[<CLIMutable>]
 type TaskRecord =
     {
         TaskID : int
@@ -69,6 +79,7 @@ type TaskRecord =
         User : User
     }
 
+[<CLIMutable>]
 type WorkRecord =
     {
         TimeStamp : DateTime
@@ -76,11 +87,6 @@ type WorkRecord =
         Value : double
     }
 
-[<CLIMutable>]
-type Person =
-    {
-        Name : string
-    }
 
  [<CLIMutable>]
 type Car =

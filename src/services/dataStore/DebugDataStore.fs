@@ -35,6 +35,8 @@ type DebugDataStore () =
         { 
             ID = id 
             Name = x.Name 
+            AuthID = x.AuthID
+            Password = x.Password
         })) 
     let projectCRUD = Crud<Project>((fun x -> x.ID), (fun id x -> 
         { 
@@ -57,7 +59,17 @@ type DebugDataStore () =
             Tasks = x.Tasks
             Range = x.Range
         }) ) 
-    
+
+    do 
+        userCRUD.Create {
+                ID = -1
+                AuthID = "test"
+                Name = "testUser"
+                Password = "test"
+        } |> ignore
+        ()
+
+
     interface IDataStore with
         member this.CreateUser u = userCRUD.Create u 
         member this.GetUsers () = userCRUD.Get ()

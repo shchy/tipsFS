@@ -9,6 +9,7 @@ open Microsoft.AspNetCore.Authentication.Cookies
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
+open EVM
 
 
 
@@ -58,6 +59,10 @@ module WebServer =
             .AddCookie(cookieAuth)   |> ignore
         // aspnet:データ保護？        
         services.AddDataProtection() |> ignore
+        // DBサービス追加
+        services.AddSingleton<IDataStore, DebugDataStore>() |> ignore
+        
+
 
     // ログ機能の設定
     let configureLogging (loggerBuilder : ILoggingBuilder) =

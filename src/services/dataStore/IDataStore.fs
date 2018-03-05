@@ -1,6 +1,7 @@
 namespace EVM
 
 type IDataStore =
+
     abstract member CreateUser : User -> User
     abstract member GetUsers : unit -> User list
     abstract member UpdateUser : User -> bool
