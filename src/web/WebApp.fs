@@ -25,8 +25,8 @@ module WebApp =
     // アクセス権がないときのハンドラ
     let accessDenied = setStatusCode 401 >=> text "Access Denied"
 
-    // // Aspnetの認証が済んでないとaccessDeniedへルーティングするHttpHandlerのラッパー
-    // let mustBeUser = requiresAuthentication accessDenied
+    // Aspnetの認証が済んでないとaccessDeniedへルーティングするHttpHandlerのラッパー
+    let mustBeUser = requiresAuthentication accessDenied
 
     // Aspnetの認証が済んでないorロールがAdmin出ない場合にaccessDeniedへルーティングするHttpHandlerのラッパー
     let mustBeAdmin =
@@ -38,7 +38,7 @@ module WebApp =
     //     requiresAuthentication accessDenied
     //     >=> requiresAuthPolicy (fun u -> u.HasClaim (ClaimTypes.Name, "John")) accessDenied
 
-    let toLogin = redirectTo true "/"
+    let toLogin = redirectTo false "/"
 
     // ログインハンドラ
     let loginHandler (requestUser:LoginRequest) =
@@ -69,81 +69,50 @@ module WebApp =
                         return! redirectTo true "/home" next ctx
             }
 
-    let loginUserWith (notAuthedHandler:HttpHandler) (authedHandler:User -> HttpHandler) =
+    let loginUserWith (authedHandler:User -> HttpHandler) =
         fun (next : HttpFunc) (ctx : HttpContext) ->
-            task {
-                let userID = ctx.User.Identity.Name
-                let dataStore = ctx.GetService<IDataStore>()
+            let userID = ctx.User.Identity.Name
+            let dataStore = ctx.GetService<IDataStore>()
 
-                let findUser = 
-                    dataStore.GetUsers()
-                    |> List.where (fun u -> u.AuthID = userID)
-                    |> List.tryHead
+            let findUser = 
+                dataStore.GetUsers()
+                |> List.where (fun u -> u.AuthID = userID)
+                |> List.tryHead
 
-                match findUser with
-                | None -> return! notAuthedHandler next ctx
-                | Some user -> return! (user |> authedHandler) next ctx
-            }
-
-    let homeHandler =
+            match findUser with
+            | None -> toLogin next ctx
+            | Some user -> (user |> authedHandler) next ctx
         
+
+    let homeHandler (user:User) =
             fun (next : HttpFunc) (ctx : HttpContext) ->
-                task {
+                let dataStore = ctx.GetService<IDataStore>()
+                let projects = dataStore.GetProjects()
+                (Home.view projects |> htmlView) next ctx
+            
 
-                    let userID = ctx.User.Identity.Name
-                    let dataStore = ctx.GetService<IDataStore>()
-
-                    let findUser = 
-                        dataStore.GetUsers()
-                        |> List.where (fun u -> u.AuthID = userID)
-                        |> List.tryHead
-
-                    match findUser with
-                    | None -> return! toLogin next ctx
-                    | Some user -> 
-                        let projects = dataStore.GetProjects()
-                        return! (Home.view projects |> htmlView) next ctx
-                }
-
-    // ログイン中のユーザ情報を表示するハンドラ
-    let userHandler =
-        fun (next : HttpFunc) (ctx : HttpContext) ->
-            text ctx.User.Identity.Name next ctx
 
     // 管理者権限チェックのサンプル
     let showUserHandler id =
         mustBeAdmin >=>
         text (sprintf "User ID: %i" id)
 
-
-    // キャッシュの使われ具合のテスト用？
-    let time() = System.DateTime.Now.ToString()
-
-    // モデルマッパーのエラーハンドラ
-    let parsingErrorHandler err = RequestErrors.BAD_REQUEST err
-
     // ルーティング処理
     let webApp : HttpHandler =
         choose [
-            GET >=> 
+            GET >=> setHttpHeader "Cache-Control" "no-cache" >=>
                 choose [
                     route  "/"           >=> (Login.view |> htmlView) 
                     route  "/login"      >=> tryBindQuery<LoginRequest> (fun _ -> toLogin) None loginHandler
-                    // route  "/home"       >=> loginUserWith toLogin homeHandler
-                    route  "/home"       >=> text "home"
-
+                ]   
+            GET >=> setHttpHeader "Cache-Control" "no-cache" >=> mustBeUser >=>
+                choose [
+                    route  "/home"       >=> loginUserWith homeHandler
 
                     route  "/logout"     >=> signOut authScheme >=> text "Successfully logged out."
                     routef "/user/%i"    showUserHandler
-                    route  "/everytime"  >=> warbler (fun _ -> (time() |> text))
                     
                 ]
-            // POST >=> 
-            //     choose [
-            //         route  "/login"      >=> setHttpHeader "Cache-Control" "no-cache" >=> tryBindForm<LoginRequest> (fun _ -> redirectTo true "/") None loginHandler                    
-            //     ]            
-            route "/car"  >=> bindModel<Car> None json
-            route "/car2" >=> tryBindQuery<Car> parsingErrorHandler None (validateModel xml)
             RequestErrors.notFound (text "Not Found") ]
 
 
