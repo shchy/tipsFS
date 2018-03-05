@@ -14,10 +14,6 @@ open Giraffe
 open EVM
 
 module WebApp =    
-
-    // ---------------------------------
-    // Auth
-    // ---------------------------------
     
     // 認証に使用するCookieのスキーマ
     let authScheme = CookieAuthenticationDefaults.AuthenticationScheme
@@ -28,10 +24,10 @@ module WebApp =
     // Aspnetの認証が済んでないとaccessDeniedへルーティングするHttpHandlerのラッパー
     let mustBeUser = requiresAuthentication accessDenied
 
-    // Aspnetの認証が済んでないorロールがAdmin出ない場合にaccessDeniedへルーティングするHttpHandlerのラッパー
-    let mustBeAdmin =
-        requiresAuthentication accessDenied
-        >=> requiresRole "Admin" accessDenied
+    // // Aspnetの認証が済んでないorロールがAdmin出ない場合にaccessDeniedへルーティングするHttpHandlerのラッパー
+    // let mustBeAdmin =
+    //     requiresAuthentication accessDenied
+    //     >=> requiresRole "Admin" accessDenied
 
     // // 認証済のClaimsPrincipalからユーザ名を見てアクセス権を判定しエラーへ流すラッパ
     // let mustBeJohn =
@@ -44,29 +40,29 @@ module WebApp =
     let loginHandler (requestUser:LoginRequest) =
         fun (next : HttpFunc) (ctx : HttpContext) ->
             task {
-                    let dataStore = ctx.GetService<IDataStore>()
+                let dataStore = ctx.GetService<IDataStore>()
 
-                    let findUser = 
-                        dataStore.GetUsers()
-                        |> List.where (fun u -> u.AuthID = requestUser.AuthID && u.Password = requestUser.Password)
-                        |> List.tryHead
+                let findUser = 
+                    dataStore.GetUsers()
+                    |> List.where (fun u -> u.AuthID = requestUser.AuthID && u.Password = requestUser.Password)
+                    |> List.tryHead
 
-                    match findUser with
-                    | None -> return! toLogin next ctx
-                    | Some user ->
-                        // JohnとしてSignInAsyncしてaspnetに認証情報を保存
-                        let issuer = "http://localhost:5000"
-                        let claims =
-                            [
-                                Claim(ClaimTypes.Name,      user.AuthID,  ClaimValueTypes.String, issuer)
-                                Claim(ClaimTypes.Role,      "Admin", ClaimValueTypes.String, issuer)
-                            ]
-                        let identity = ClaimsIdentity(claims, authScheme)
-                        let claim     = ClaimsPrincipal(identity)
+                match findUser with
+                | None -> return! toLogin next ctx
+                | Some user ->
+                    // JohnとしてSignInAsyncしてaspnetに認証情報を保存
+                    let issuer = "http://localhost:5000"
+                    let claims =
+                        [
+                            Claim(ClaimTypes.Name,      user.AuthID,  ClaimValueTypes.String, issuer)
+                            Claim(ClaimTypes.Role,      "Admin", ClaimValueTypes.String, issuer)
+                        ]
+                    let identity = ClaimsIdentity(claims, authScheme)
+                    let claim     = ClaimsPrincipal(identity)
 
-                        do! ctx.SignInAsync(authScheme, claim)
+                    do! ctx.SignInAsync(authScheme, claim)
 
-                        return! redirectTo true "/home" next ctx
+                    return! redirectTo true "/home" next ctx
             }
 
     let loginUserWith (authedHandler:User -> HttpHandler) =
@@ -85,17 +81,22 @@ module WebApp =
         
 
     let homeHandler (user:User) =
-            fun (next : HttpFunc) (ctx : HttpContext) ->
-                let dataStore = ctx.GetService<IDataStore>()
-                let projects = dataStore.GetProjects()
-                (Home.view projects |> htmlView) next ctx
+        fun (next : HttpFunc) (ctx : HttpContext) ->
+            let dataStore = ctx.GetService<IDataStore>()
+            let projects = dataStore.GetProjects()
+            (Home.view projects |> htmlView) next ctx
             
 
 
     // 管理者権限チェックのサンプル
-    let showUserHandler id =
-        mustBeAdmin >=>
-        text (sprintf "User ID: %i" id)
+    let projectHandler id =
+        fun (next : HttpFunc) (ctx : HttpContext) ->
+            let dataStore = ctx.GetService<IDataStore>()
+            let project = 
+                dataStore.GetProjects()
+                |> List.find (fun x -> x.ID = id)
+            text project.Name next ctx            
+            
 
     // ルーティング処理
     let webApp : HttpHandler =
@@ -110,7 +111,7 @@ module WebApp =
                     route  "/home"       >=> loginUserWith homeHandler
 
                     route  "/logout"     >=> signOut authScheme >=> text "Successfully logged out."
-                    routef "/user/%i"    showUserHandler
+                    routef "/project/%i"    projectHandler
                     
                 ]
             RequestErrors.notFound (text "Not Found") ]

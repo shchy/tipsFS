@@ -67,6 +67,13 @@ type DebugDataStore () =
                 Name = "testUser"
                 Password = "test"
         } |> ignore
+        projectCRUD.Create {
+            ID = 1
+            Name = "project01"
+            Sprints = List.empty
+            Tasks = List.empty
+            Users = List.empty
+        } |> ignore
         ()
 
 
