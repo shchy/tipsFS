@@ -110,7 +110,7 @@ module WebApp =
                 choose [
                     route  "/home"       >=> loginUserWith homeHandler
 
-                    route  "/logout"     >=> signOut authScheme >=> text "Successfully logged out."
+                    route  "/logout"     >=> signOut authScheme >=> toLogin
                     routef "/project/%i"    projectHandler
                     
                 ]
