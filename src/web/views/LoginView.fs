@@ -5,22 +5,20 @@ open Giraffe
 open Giraffe.GiraffeViewEngine
 
 module Views =
-    let layout (content: XmlNode list) =
-        html [] [
-            head [] [
-                title []  [ encodedText "Giraffe" ]
-            ]
-            body [] content
-        ]
 
-    let partial () =
-        p [] [ encodedText "Some partial text." ]
-
-    let personView (model : Person) =
+    let loginView () =
         [
-            div [_class "container"] [
-                    h3 [_title "Some title attribute"] [ sprintf "Hello, %s" model.Name |> encodedText ]
-                    a [_href "https://github.com/giraffe-fsharp/Giraffe"] [encodedText "Github"]
+            div [_class "container" ] [
+                form [] [
+                    div [ _class "form-group"] [
+                        label [_for "userid"] [ encodedText "ID" ]
+                        input [_id "userid"; _class "form-control"; _placeholder "Enter User ID" ] 
+                    ]
+                    div [ _class "form-group"] [
+                        label [_for "password"] [ encodedText "Password" ]
+                        input [_type "password"; _id "password"; _class "form-control"; _placeholder "Enter User Password" ] 
+                    ]
+                    button [_type "submit"; _class "btn btn-primary"] [ encodedText "Submit" ]
                 ]
-            div [] [partial()]
-        ] |> layout
+            ]
+        ] 

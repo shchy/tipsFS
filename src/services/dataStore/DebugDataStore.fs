@@ -30,13 +30,33 @@ type Crud<'M>
         models <- xs
         true
 
-    
-    
-
-
-
 type DebugDataStore () =
-    let userCRUD = Crud<User>((fun x -> x.ID), (fun id x -> { ID = id; Name = x.Name }) ) 
+    let userCRUD = Crud<User>((fun x -> x.ID), (fun id x -> 
+        { 
+            ID = id 
+            Name = x.Name 
+        })) 
+    let projectCRUD = Crud<Project>((fun x -> x.ID), (fun id x -> 
+        { 
+            ID = id
+            Name = x.Name
+            Sprints = x.Sprints
+            Tasks = x.Tasks
+            Users = x.Users
+        }) ) 
+    let taskCRUD = Crud<TaskItem>((fun x -> x.ID), (fun id x -> 
+        { 
+            ID = id
+            Name = x.Name
+            Value = x.Value
+        }) ) 
+    let sprintCRUD = Crud<Sprint>((fun x -> x.ID), (fun id x -> 
+        { 
+            ID = id 
+            Name = x.Name 
+            Tasks = x.Tasks
+            Range = x.Range
+        }) ) 
     
     interface IDataStore with
         member this.CreateUser u = userCRUD.Create u 
@@ -44,18 +64,18 @@ type DebugDataStore () =
         member this.UpdateUser u = userCRUD.Update u
         member this.DeleteUser u = userCRUD.Delete u
 
-        // member this.CreateProject : Project -> Project
-        // member this.GetProjects : unit -> Project list
-        // member this.UpdateProject : Project -> bool
-        // member this.DeleteProject : Project -> bool
+        member this.CreateProject x = projectCRUD.Create x
+        member this.GetProjects () = projectCRUD.Get ()
+        member this.UpdateProject x = projectCRUD.Update x
+        member this.DeleteProject x = projectCRUD.Delete x
 
-        // member this.CreateTaskItem : TaskItem -> TaskItem
-        // member this.GetTaskItems : unit -> TaskItem list
-        // member this.UpdateTaskItem : TaskItem -> bool
-        // member this.DeleteTaskItem : TaskItem -> bool
+        member this.CreateTaskItem x = taskCRUD.Create x
+        member this.GetTaskItems () = taskCRUD.Get ()
+        member this.UpdateTaskItem x = taskCRUD.Update x
+        member this.DeleteTaskItem x = taskCRUD.Delete x
 
-        // member this.CreateSprint : Sprint -> Sprint
-        // member this.GetSprints : unit -> Sprint list
-        // member this.UpdateSprint : Sprint -> bool
-        // member this.DeleteSprint : Sprint -> bool
+        member this.CreateSprint x = sprintCRUD.Create x
+        member this.GetSprints () = sprintCRUD.Get ()
+        member this.UpdateSprint x = sprintCRUD.Update x
+        member this.DeleteSprint x = sprintCRUD.Delete x
 

@@ -23,18 +23,18 @@ module WebApp =
     // アクセス権がないときのハンドラ
     let accessDenied = setStatusCode 401 >=> text "Access Denied"
 
-    // Aspnetの認証が済んでないとaccessDeniedへルーティングするHttpHandlerのラッパー
-    let mustBeUser = requiresAuthentication accessDenied
+    // // Aspnetの認証が済んでないとaccessDeniedへルーティングするHttpHandlerのラッパー
+    // let mustBeUser = requiresAuthentication accessDenied
 
     // Aspnetの認証が済んでないorロールがAdmin出ない場合にaccessDeniedへルーティングするHttpHandlerのラッパー
     let mustBeAdmin =
         requiresAuthentication accessDenied
         >=> requiresRole "Admin" accessDenied
 
-    // 認証済のClaimsPrincipalからユーザ名を見てアクセス権を判定しエラーへ流すラッパ
-    let mustBeJohn =
-        requiresAuthentication accessDenied
-        >=> requiresAuthPolicy (fun u -> u.HasClaim (ClaimTypes.Name, "John")) accessDenied
+    // // 認証済のClaimsPrincipalからユーザ名を見てアクセス権を判定しエラーへ流すラッパ
+    // let mustBeJohn =
+    //     requiresAuthentication accessDenied
+    //     >=> requiresAuthPolicy (fun u -> u.HasClaim (ClaimTypes.Name, "John")) accessDenied
 
     // ログインハンドラ
     let loginHandler =
@@ -83,16 +83,10 @@ module WebApp =
         choose [
             GET >=>
                 choose [
-                    route  "/"           >=> text "index"
-                    route  "/ping"       >=> text "pong"
-                    route  "/error"      >=> (fun _ _ -> failwith "Something went wrong!")
+                    route  "/"           >=> (Views.loginView() |> Views.layout |> htmlView) 
                     route  "/login"      >=> loginHandler
                     route  "/logout"     >=> signOut authScheme >=> text "Successfully logged out."
-                    route  "/user"       >=> mustBeUser >=> userHandler
-                    route  "/john-only"  >=> mustBeJohn >=> userHandler
                     routef "/user/%i"    showUserHandler
-                    route  "/person"     >=> (Views.personView { Name = "Html Node" } |> htmlView)
-                    route  "/once"       >=> (time() |> text)
                     route  "/everytime"  >=> warbler (fun _ -> (time() |> text))
                     route  "/configured" >=> configuredHandler
                 ]
