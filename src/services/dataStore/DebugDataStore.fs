@@ -6,7 +6,7 @@ type Crud<'M>
     
     let mutable models : 'M list = List.Empty
 
-    member this.Create (model:'M) = 
+    member __.Create (model:'M) = 
         let newID = 
             models 
             |> List.fold (fun (max:int) (x:'M) -> if max < getID x then getID x else max ) -1
@@ -15,15 +15,15 @@ type Crud<'M>
         let newOne = createFrom newID model
         models <- models @ [newOne]
         newOne
-    member this.Get () = models
-    member this.Update model =
+    member __.Get () = models
+    member __.Update model =
         let xs = 
             models
             |> List.where (fun (x:'M) -> getID x = getID model)
         models <- xs @ [model]
         true            
          
-    member this.Delete model =
+    member __.Delete model =
         let xs = 
             models
             |> List.where (fun (x:'M) -> getID x = getID model)
@@ -78,23 +78,23 @@ type DebugDataStore () =
 
 
     interface IDataStore with
-        member this.CreateUser u = userCRUD.Create u 
-        member this.GetUsers () = userCRUD.Get ()
-        member this.UpdateUser u = userCRUD.Update u
-        member this.DeleteUser u = userCRUD.Delete u
+        member __.CreateUser u = userCRUD.Create u 
+        member __.GetUsers () = userCRUD.Get ()
+        member __.UpdateUser u = userCRUD.Update u
+        member __.DeleteUser u = userCRUD.Delete u
 
-        member this.CreateProject x = projectCRUD.Create x
-        member this.GetProjects () = projectCRUD.Get ()
-        member this.UpdateProject x = projectCRUD.Update x
-        member this.DeleteProject x = projectCRUD.Delete x
+        member __.CreateProject x = projectCRUD.Create x
+        member __.GetProjects () = projectCRUD.Get ()
+        member __.UpdateProject x = projectCRUD.Update x
+        member __.DeleteProject x = projectCRUD.Delete x
 
-        member this.CreateTaskItem x = taskCRUD.Create x
-        member this.GetTaskItems () = taskCRUD.Get ()
-        member this.UpdateTaskItem x = taskCRUD.Update x
-        member this.DeleteTaskItem x = taskCRUD.Delete x
+        member __.CreateTaskItem x = taskCRUD.Create x
+        member __.GetTaskItems () = taskCRUD.Get ()
+        member __.UpdateTaskItem x = taskCRUD.Update x
+        member __.DeleteTaskItem x = taskCRUD.Delete x
 
-        member this.CreateSprint x = sprintCRUD.Create x
-        member this.GetSprints () = sprintCRUD.Get ()
-        member this.UpdateSprint x = sprintCRUD.Update x
-        member this.DeleteSprint x = sprintCRUD.Delete x
+        member __.CreateSprint x = sprintCRUD.Create x
+        member __.GetSprints () = sprintCRUD.Get ()
+        member __.UpdateSprint x = sprintCRUD.Update x
+        member __.DeleteSprint x = sprintCRUD.Delete x
 
