@@ -8,8 +8,10 @@
     <Compile Include="src/models/*.fs" />
     <Compile Include="src/services/dataStore/IDataStore.fs" />
     <Compile Include="src/services/dataStore/DebugDataStore.fs" />
-    <Compile Include="src/views/*.fs" />
-    <Compile Include="src/web/*/*.fs" />
+    <Compile Include="src/web/models/*.fs" />
+    <Compile Include="src/web/views/LayoutView.fs" />
+    <Compile Include="src/web/views/LoginView.fs" />
+    <Compile Include="src/web/views/HomeView.fs" />
     <Compile Include="src/web/*.fs" />
     <Compile Include="src/Program.fs" />
     <None Include="web.config" />

@@ -3,8 +3,8 @@ namespace EVM.Web
 open Giraffe
 open Giraffe.GiraffeViewEngine
 
-module TemplateViews =
-    let layout (content: XmlNode list) =
+module Layout =
+    let view (content: XmlNode list) =
         html [] [
             head [] [
                 title []  [ encodedText "Giraffe" ]

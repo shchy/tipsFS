@@ -38,11 +38,12 @@ module WebApp =
     //     requiresAuthentication accessDenied
     //     >=> requiresAuthPolicy (fun u -> u.HasClaim (ClaimTypes.Name, "John")) accessDenied
 
+    let toLogin = redirectTo true "/"
+
     // ログインハンドラ
     let loginHandler (requestUser:LoginRequest) =
         fun (next : HttpFunc) (ctx : HttpContext) ->
             task {
-                
                     let dataStore = ctx.GetService<IDataStore>()
 
                     let findUser = 
@@ -51,14 +52,13 @@ module WebApp =
                         |> List.tryHead
 
                     match findUser with
-                    | None -> return! redirectTo true "/" next ctx
+                    | None -> return! toLogin next ctx
                     | Some user ->
                         // JohnとしてSignInAsyncしてaspnetに認証情報を保存
                         let issuer = "http://localhost:5000"
                         let claims =
                             [
-                                Claim(ClaimTypes.Name,      user.Name,  ClaimValueTypes.String, issuer)
-                                Claim(ClaimTypes.NameIdentifier,   user.AuthID,   ClaimValueTypes.String, issuer)
+                                Claim(ClaimTypes.Name,      user.AuthID,  ClaimValueTypes.String, issuer)
                                 Claim(ClaimTypes.Role,      "Admin", ClaimValueTypes.String, issuer)
                             ]
                         let identity = ClaimsIdentity(claims, authScheme)
@@ -68,6 +68,42 @@ module WebApp =
 
                         return! redirectTo true "/home" next ctx
             }
+
+    let loginUserWith (notAuthedHandler:HttpHandler) (authedHandler:User -> HttpHandler) =
+        fun (next : HttpFunc) (ctx : HttpContext) ->
+            task {
+                let userID = ctx.User.Identity.Name
+                let dataStore = ctx.GetService<IDataStore>()
+
+                let findUser = 
+                    dataStore.GetUsers()
+                    |> List.where (fun u -> u.AuthID = userID)
+                    |> List.tryHead
+
+                match findUser with
+                | None -> return! notAuthedHandler next ctx
+                | Some user -> return! (user |> authedHandler) next ctx
+            }
+
+    let homeHandler =
+        
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+
+                    let userID = ctx.User.Identity.Name
+                    let dataStore = ctx.GetService<IDataStore>()
+
+                    let findUser = 
+                        dataStore.GetUsers()
+                        |> List.where (fun u -> u.AuthID = userID)
+                        |> List.tryHead
+
+                    match findUser with
+                    | None -> return! toLogin next ctx
+                    | Some user -> 
+                        let projects = dataStore.GetProjects()
+                        return! (Home.view projects |> htmlView) next ctx
+                }
 
     // ログイン中のユーザ情報を表示するハンドラ
     let userHandler =
@@ -91,8 +127,9 @@ module WebApp =
         choose [
             GET >=> 
                 choose [
-                    route  "/"           >=> (Views.loginView |> htmlView) 
-                    route  "/login"      >=> tryBindQuery<LoginRequest> (fun _ -> redirectTo true "/") None loginHandler
+                    route  "/"           >=> (Login.view |> htmlView) 
+                    route  "/login"      >=> tryBindQuery<LoginRequest> (fun _ -> toLogin) None loginHandler
+                    // route  "/home"       >=> loginUserWith toLogin homeHandler
                     route  "/home"       >=> text "home"
 
 

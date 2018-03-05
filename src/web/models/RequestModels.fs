@@ -1,7 +1,6 @@
-namespace EVM.Web
+namespace EVM
 
 open System
-open Giraffe
 
 [<CLIMutable>]
 type LoginRequest =

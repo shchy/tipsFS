@@ -4,9 +4,9 @@ open EVM
 open Giraffe
 open Giraffe.GiraffeViewEngine
 
-module Views =
+module Login =
 
-    let loginView =
+    let view =
         [
             div [_class "container" ] [
                 form [_action "/login"; _method "GET"] [
@@ -21,4 +21,4 @@ module Views =
                     button [_type "submit"; _class "btn btn-primary"] [ encodedText "Submit" ]
                 ]
             ]
-        ] |> TemplateViews.layout
+        ] |> Layout.view
