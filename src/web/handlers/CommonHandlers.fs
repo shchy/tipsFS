@@ -16,7 +16,7 @@ module Common =
 
     let toLogin message = Login.view (Some message) |> htmlView
     // アクセス権がないときのハンドラ
-    let accessDenied = setStatusCode 401 >=>  toLogin Msg.accessDenied
+    let accessDenied = clearResponse >=> setStatusCode 401 >=>  toLogin Message.accessDenied
     // Aspnetの認証が済んでないとaccessDeniedへルーティングするHttpHandlerのラッパー
     let mustBeUser : HttpHandler = requiresAuthentication accessDenied
 

@@ -61,18 +61,18 @@ type DebugDataStore () =
         }) ) 
 
     do 
-        userCRUD.Create {
+        let user = userCRUD.Create {
                 ID = -1
                 AuthID = "test"
                 Name = "testUser"
                 Password = "test"
-        } |> ignore
+        }
         projectCRUD.Create {
             ID = 1
             Name = "project01"
             Sprints = List.empty
             Tasks = List.empty
-            Users = List.empty
+            Users = [user]
         } |> ignore
         ()
 

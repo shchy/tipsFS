@@ -1,6 +1,6 @@
 namespace EVM.Web
 
-module Msg =
+module Message =
     let loginError = "ユーザIDまたはパスワードに誤りがあります"
 
     let accessDenied = "アクセス権がありません"

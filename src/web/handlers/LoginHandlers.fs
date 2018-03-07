@@ -23,7 +23,7 @@ module Login =
         |> List.where (fun u -> u.AuthID = requestUser.AuthID && u.Password = requestUser.Password)
         |> List.tryHead
         |> fun x -> match x with
-                    | None -> Common.toLogin Msg.loginError next ctx
+                    | None -> Common.toLogin Message.loginError next ctx
                     | Some user -> 
                     task {
                         // JohnとしてSignInAsyncしてaspnetに認証情報を保存

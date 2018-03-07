@@ -11,5 +11,8 @@ module Home =
 
     let homeHandler (user:User) (next : HttpFunc) (ctx : HttpContext) =    
         let dataStore = ctx.GetService<IDataStore>()
-        let projects = dataStore.GetProjects()
-        (Home.view projects |> htmlView) next ctx
+        let projects = 
+            dataStore.GetProjects()
+            |> List.where (fun x -> x.Users
+                                    |> List.exists (fun y -> y.ID = user.ID) )
+        (Home.view user projects |> htmlView) next ctx
