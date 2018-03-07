@@ -7,14 +7,13 @@ open EVM.Web.Handler
 open EVM.Web.View
 
 module WebApp =    
-    
     // ルーティング処理
     let webApp : HttpHandler =
         choose [
             GET >=> 
                 choose [
-                    route  "/"           >=> setHttpHeader "Cache-Control" "no-cache" >=> requiresAuthentication (redirectTo false "/login") >=> redirectTo false "/home"
-                    route  "/login"      >=> (Login.view None |> htmlView) 
+                    route  "/"           >=> redirectTo false "/login" 
+                    route  "/login"      >=> setHttpHeader "Cache-Control" "no-cache" >=> requiresAuthentication ((Login.view None |> htmlView)) >=> redirectTo false "/home"
                 ]               
             GET >=> setHttpHeader "Cache-Control" "no-cache" >=> Common.mustBeUser >=>
                 choose [
