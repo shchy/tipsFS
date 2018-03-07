@@ -12,6 +12,10 @@
     <Compile Include="src/web/views/LayoutView.fs" />
     <Compile Include="src/web/views/LoginView.fs" />
     <Compile Include="src/web/views/HomeView.fs" />
+    <Compile Include="src/web/handlers/CommonHandlers.fs" />
+    <Compile Include="src/web/handlers/LoginHandlers.fs" />
+    <Compile Include="src/web/handlers/HomeHandlers.fs" />
+    <Compile Include="src/web/handlers/ProjectHandlers.fs" />
     <Compile Include="src/web/*.fs" />
     <Compile Include="src/Program.fs" />
     <None Include="web.config" />
