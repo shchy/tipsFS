@@ -9,7 +9,7 @@ module Login =
     let view =
         [
             div [_class "container" ] [
-                form [_action "/login"; _method "GET"] [
+                form [_action "/login"; _method "POST"] [
                     div [ _class "form-group"] [
                         label [_for "authID"] [ encodedText "ID" ]
                         input [_id "authID";_name "authID"; _class "form-control"; _placeholder "Enter User ID" ] 

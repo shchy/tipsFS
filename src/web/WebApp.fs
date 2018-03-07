@@ -34,86 +34,84 @@ module WebApp =
     //     requiresAuthentication accessDenied
     //     >=> requiresAuthPolicy (fun u -> u.HasClaim (ClaimTypes.Name, "John")) accessDenied
 
-    let toLogin = redirectTo false "/"
+    let toLogin = redirectTo false "/login"
+    let notFound message = RequestErrors.notFound (text message) 
 
     // ログインハンドラ
-    let loginHandler (requestUser:LoginRequest) =
-        fun (next : HttpFunc) (ctx : HttpContext) ->
-            task {
-                let dataStore = ctx.GetService<IDataStore>()
-
-                let findUser = 
-                    dataStore.GetUsers()
-                    |> List.where (fun u -> u.AuthID = requestUser.AuthID && u.Password = requestUser.Password)
-                    |> List.tryHead
-
-                match findUser with
-                | None -> return! toLogin next ctx
-                | Some user ->
-                    // JohnとしてSignInAsyncしてaspnetに認証情報を保存
-                    let issuer = "http://localhost:5000"
-                    let claims =
-                        [
-                            Claim(ClaimTypes.Name,      user.AuthID,  ClaimValueTypes.String, issuer)
-                            Claim(ClaimTypes.Role,      "Admin", ClaimValueTypes.String, issuer)
-                        ]
-                    let identity = ClaimsIdentity(claims, authScheme)
-                    let claim     = ClaimsPrincipal(identity)
-
-                    do! ctx.SignInAsync(authScheme, claim)
-
-                    return! redirectTo true "/home" next ctx
-            }
-
-    let loginUserWith (authedHandler:User -> HttpHandler) =
-        fun (next : HttpFunc) (ctx : HttpContext) ->
-            let userID = ctx.User.Identity.Name
+    let loginHandler (requestUser:LoginRequest) (next : HttpFunc) (ctx : HttpContext) =
+        task {
             let dataStore = ctx.GetService<IDataStore>()
 
             let findUser = 
                 dataStore.GetUsers()
-                |> List.where (fun u -> u.AuthID = userID)
+                |> List.where (fun u -> u.AuthID = requestUser.AuthID && u.Password = requestUser.Password)
                 |> List.tryHead
 
             match findUser with
-            | None -> toLogin next ctx
-            | Some user -> (user |> authedHandler) next ctx
-        
+            | None -> return! toLogin next ctx
+            | Some user ->
+                // JohnとしてSignInAsyncしてaspnetに認証情報を保存
+                let issuer = "http://localhost:5000"
+                let claims =
+                    [
+                        Claim(ClaimTypes.Name,      user.AuthID,  ClaimValueTypes.String, issuer)
+                        Claim(ClaimTypes.Role,      "Admin", ClaimValueTypes.String, issuer)
+                    ]
+                let identity = ClaimsIdentity(claims, authScheme)
+                let claim     = ClaimsPrincipal(identity)
 
-    let homeHandler (user:User) =
-        fun (next : HttpFunc) (ctx : HttpContext) ->
-            let dataStore = ctx.GetService<IDataStore>()
-            let projects = dataStore.GetProjects()
-            (Home.view projects |> htmlView) next ctx
+                do! ctx.SignInAsync(authScheme, claim)
+
+                return! redirectTo true "/home" next ctx
+        }
+
+    let loginUserWith (authedHandler:User -> HttpHandler) (next : HttpFunc) (ctx : HttpContext)=
+        let userID = ctx.User.Identity.Name
+        let dataStore = ctx.GetService<IDataStore>()
+        let f = 
+            dataStore.GetUsers()
+            |> List.tryFind (fun u -> u.AuthID = userID)
+            |> fun x -> match x with
+                        | None -> toLogin
+                        | Some user -> (user |> authedHandler)
+        f next ctx                    
             
-
+    let homeHandler (user:User) (next : HttpFunc) (ctx : HttpContext) =    
+        let dataStore = ctx.GetService<IDataStore>()
+        let projects = dataStore.GetProjects()
+        (Home.view projects |> htmlView) next ctx
 
     // 管理者権限チェックのサンプル
-    let projectHandler id =
-        fun (next : HttpFunc) (ctx : HttpContext) ->
-            let dataStore = ctx.GetService<IDataStore>()
-            let project = 
-                dataStore.GetProjects()
-                |> List.find (fun x -> x.ID = id)
-            text project.Name next ctx            
-            
+    let projectHandler id (next : HttpFunc) (ctx : HttpContext) =
+        let dataStore = ctx.GetService<IDataStore>()
+        let f = 
+            dataStore.GetProjects()
+            |> List.tryFind (fun x -> x.ID = id)
+            |> fun x -> match x with
+                        | None -> notFound "NotFound"
+                        | Some p -> text p.Name 
+        f next ctx
+        
 
     // ルーティング処理
     let webApp : HttpHandler =
         choose [
-            GET >=> setHttpHeader "Cache-Control" "no-cache" >=>
+            GET >=> 
                 choose [
-                    route  "/"           >=> (Login.view |> htmlView) 
-                    route  "/login"      >=> tryBindQuery<LoginRequest> (fun _ -> toLogin) None loginHandler
-                ]   
+                    route  "/"           >=> toLogin
+                    route  "/login"      >=> (Login.view |> htmlView) 
+                ]               
             GET >=> setHttpHeader "Cache-Control" "no-cache" >=> mustBeUser >=>
                 choose [
-                    route  "/home"       >=> loginUserWith homeHandler
-
                     route  "/logout"     >=> signOut authScheme >=> toLogin
-                    routef "/project/%i"    projectHandler
-                    
+                    route  "/home"       >=> loginUserWith homeHandler
+                    routef "/project/%i"     projectHandler
                 ]
-            RequestErrors.notFound (text "Not Found") ]
+            POST >=> 
+                choose [
+                    route  "/login"      >=> tryBindForm<LoginRequest> (fun _ -> toLogin) None loginHandler
+                ]            
+            notFound "Not Found"
+            ]
 
 
