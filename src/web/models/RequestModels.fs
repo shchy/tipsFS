@@ -1,4 +1,4 @@
-namespace EVM
+namespace EVM.Web
 
 open System
 

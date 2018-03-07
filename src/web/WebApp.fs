@@ -13,7 +13,7 @@ module WebApp =
         choose [
             GET >=> 
                 choose [
-                    route  "/"           >=> redirectTo false "/login"
+                    route  "/"           >=> setHttpHeader "Cache-Control" "no-cache" >=> requiresAuthentication (redirectTo false "/login") >=> redirectTo false "/home"
                     route  "/login"      >=> (Login.view None |> htmlView) 
                 ]               
             GET >=> setHttpHeader "Cache-Control" "no-cache" >=> Common.mustBeUser >=>
