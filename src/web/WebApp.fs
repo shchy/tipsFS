@@ -17,7 +17,7 @@ module WebApp =
             GET >=> 
                 choose [
                     route  "/"           >=> redirectTo false "/login" 
-                    route  "/login"      >=> setNoCache >=> requiresAuthentication ((Login.view None |> htmlView)) >=> redirectTo false "/home"
+                    route  "/login"      >=> setNoCache >=> requiresAuthentication (Common.toLogin None) >=> redirectTo false "/home"
                 ]               
             GET >=> setNoCache >=> Common.mustBeUser >=>
                 choose [
@@ -27,7 +27,7 @@ module WebApp =
                 ]
             POST >=> 
                 choose [
-                    route  "/login"      >=> tryBindForm<LoginRequest> (fun _ -> Common.toLogin Message.loginError) None Login.loginHandler
+                    route  "/login"      >=> tryBindForm<LoginRequest> (fun _ -> Common.toLogin (Some Message.loginError)) None Login.loginHandler
                 ]
             Common.notFound "Not Found"
             ]

@@ -24,4 +24,52 @@ module Layout =
     let view (titleHeader:string) (content: XmlNode list) = 
         viewWithHeaders titleHeader List.Empty content
 
+    let updateAttribute (name:string) (value:string) (attrs:XmlAttribute[]) =
+        let isMarge = 
+            attrs
+            |> Array.exists (fun x ->   match x with 
+                                        | KeyValue(n, _)    -> name = n 
+                                        | _                 -> false) 
+
+        if isMarge then
+            seq {
+                for attr in attrs do
+                    yield 
+                        match attr with 
+                        | KeyValue(n, v)    -> if name = n then KeyValue(name, (v + " " + value)) else attr
+                        | _                 -> attr   
+            } |> Array.ofSeq
+        else
+            Array.append attrs [|KeyValue(name, value)|]
+
+
+    let mergeAttribute (attr:XmlAttribute) (attrs:XmlAttribute[]) =
+        match attr with
+        | KeyValue(name, value) -> updateAttribute name value attrs 
+        | _ -> (Array.append attrs [|attr|]) 
+
+
+    let appendAttribute (attr:XmlAttribute) (x:XmlNode)=
+        match x with
+        | ParentNode((tagName, attrs), childs) -> ParentNode((tagName, (mergeAttribute attr attrs)), childs)
+        | VoidElement((tagName, attrs)) -> VoidElement((tagName, (mergeAttribute attr attrs)))
+        | _ -> x
+
+
+    let toListView (makeGroup : XmlNode list -> XmlNode) (f:'a -> XmlNode) (items:'a list) = 
+        items
+        |> List.map (f >> (appendAttribute (_class "list-group-item")))
+        |> makeGroup 
+        |> (appendAttribute (_class "list-group"))
+
+    let toListViewDiv (f:'a -> XmlNode) (items:'a list) =
+        items
+        |> toListView (fun x -> div [] x) f
+    let toListViewUl (f:'a -> XmlNode) (items:'a list) =
+        items
+        |> toListView (fun x -> ul [] x) f    
+
+  
+        
+        
     

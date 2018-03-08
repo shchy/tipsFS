@@ -14,9 +14,9 @@ module Common =
     let authScheme = CookieAuthenticationDefaults.AuthenticationScheme
 
 
-    let toLogin message = Login.view (Some message) |> htmlView
+    let toLogin message = Login.view message |> htmlView
     // アクセス権がないときのハンドラ
-    let accessDenied = clearResponse >=> setStatusCode 401 >=>  toLogin Message.accessDenied
+    let accessDenied = clearResponse >=> setStatusCode 401 >=>  toLogin (Some Message.accessDenied)
     // Aspnetの認証が済んでないとaccessDeniedへルーティングするHttpHandlerのラッパー
     let mustBeUser : HttpHandler = requiresAuthentication accessDenied
 

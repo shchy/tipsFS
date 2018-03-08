@@ -6,17 +6,15 @@ open Giraffe
 open Giraffe.GiraffeViewEngine
 
 module Home =
-    let view (user:User) (prjects:Project list)  =
-        let toLink = fun (p:Project) -> (a [_href (sprintf "/project/%d" p.ID) ] [ rawText p.Name])
-        let projectLinks = List.map toLink prjects
-        
+    let view (user:User) (projects:Project list)  =
         [
             div [_class "container" ] [
                 div [_class "row"] [
                     h1 [] [rawText user.Name]
                 ]
                 div [_class "row"] [
-                    li [] projectLinks
+                    projects
+                    |> Layout.toListViewUl (fun p -> (a [_href (sprintf "/project/%d" p.ID) ] [ rawText p.Name]) )
                 ]
             ]
         ]
