@@ -7,9 +7,6 @@ open Giraffe.GiraffeViewEngine
 
 module Project =
     let view (project:Project)  =
-        // let toLink = fun (p:Project) -> (a [_href (sprintf "/project/%d" p.ID) ] [ rawText p.Name])
-        // let projectLinks = List.map toLink prjects
-        
         [
             div [_class "container" ] [
                 div [_class "row"] [
@@ -49,11 +46,24 @@ module Project =
                         ]
                     ]
                 ]
-
-
-                
-
-                
             ]
         ]
         |> Layout.view project.Name
+    let createView (message:string option) =
+        [
+            div [_class "container"] [
+                yield h1 [_class "h3 mb-3 font-weight-normal"] [
+                        rawText "create project"
+                    ]
+                yield form [ _class "form-edit"; _action "/project/create"; _method "POST"] [
+                        
+                    label [_for "name"; _class "sr-only"] [ rawText "name" ]
+                    input [_id "name";_name "name"; _class "form-control"; _placeholder "Name" ] 
+                    
+                    button [_type "submit"; _class "btn btn-lg btn-primary btn-block"] [ rawText "Submit" ]
+                ]
+            
+                if message.IsSome then 
+                    yield div [_class "alert alert-warning"; attr "role" "alert" ] [ rawText message.Value ]
+            ]
+        ] |> Layout.view "Create Project" 

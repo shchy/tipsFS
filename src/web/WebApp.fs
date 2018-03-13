@@ -16,19 +16,24 @@ module WebApp =
         choose [
             GET >=> 
                 choose [
-                    route  "/"           >=> redirectTo false "/login" 
-                    route  "/login"      >=> setNoCache >=> requiresAuthentication (Common.toLogin None) >=> redirectTo false "/home"
-                ]               
-            GET >=> setNoCache >=> Common.mustBeUser >=>
-                choose [
-                    route  "/logout"      >=> signOut Common.authScheme >=> redirectTo false "/login"
-                    route  "/home"        >=> Login.loginUserWith Home.homeHandler
-                    routef "/project/%i"      Project.projectHandler 
-                ]
+                    route  "/"                      >=> redirectTo false "/login" 
+                    route  "/login"                 >=> setNoCache >=> requiresAuthentication (Common.toLogin None) >=> redirectTo false "/home"
+                ]    
             POST >=> 
                 choose [
-                    route  "/login"      >=> tryBindForm<LoginRequest> (fun _ -> Common.toLogin (Some Message.loginError)) None Login.loginHandler
+                    route  "/login"                 >=> tryBindForm<LoginRequest> (fun _ -> Common.toLogin (Some Message.loginError)) None Login.loginHandler
+                ]                  
+            GET >=> setNoCache >=> Common.mustBeUser >=>
+                choose [
+                    route  "/logout"                >=> signOut Common.authScheme >=> redirectTo false "/login"
+                    route  "/home"                  >=> Login.loginUserWith Home.homeHandler
+                    routef "/project/%i"            (Project.projectHandler >> Login.loginUserWith)
+                    route  "/project/create"        >=> Login.loginUserWith (Project.createProjectHandler None)
                 ]
+            POST >=> Common.mustBeUser >=>
+                choose [
+                    route  "/project/create"        >=> tryBindForm<CreateProjectRequest> (fun _ -> Common.toLogin (Some Message.loginError)) None (Project.tryCreateProjectHandler >> Login.loginUserWith)
+                ]            
             Common.notFound "Not Found"
             ]
 

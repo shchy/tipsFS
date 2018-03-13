@@ -8,3 +8,10 @@ type LoginRequest =
         AuthID : string
         Password : string
     }
+
+
+[<CLIMutable>]
+type CreateProjectRequest =
+    {
+        Name : string
+    }
