@@ -69,6 +69,13 @@ module Layout =
         items
         |> toListView (fun x -> ul [] x) f    
 
+    let toCard header (contents:XmlNode) =
+        div [_class "card"] [
+            div [_class "card-header"] [
+                rawText header
+            ]
+            contents
+        ]
   
         
         

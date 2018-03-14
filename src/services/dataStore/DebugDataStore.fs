@@ -51,6 +51,7 @@ type DebugDataStore () =
             ID = id
             Name = x.Name
             Value = x.Value
+            Tags = x.Tags
         }) ) 
     let sprintCRUD = Crud<Sprint>((fun x -> x.ID), (fun id x -> 
         { 

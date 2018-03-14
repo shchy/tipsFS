@@ -21,6 +21,7 @@ type TaskItem =
         ID : int
         Name : string
         Value : double
+        Tags : Tag list
     }
 
 [<CLIMutable>]
